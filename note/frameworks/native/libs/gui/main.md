@@ -30,3 +30,12 @@ class BufferQueueCore : public virtual RefBase {
 }
 ```
 
+## SurfaceComposerClient
+
+### Transaction
+
+```C++
+```
+
+## LayerState.h
+
