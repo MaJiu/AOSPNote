@@ -271,7 +271,7 @@ FocusResolver::Focusability FocusResolver::isTokenFocusable(
 
 ## Focused Application 变更流程
 
-focused application 的变更相比 focused window 的变更简单些，focused application 在前台 resumed 的 activity。因此当一个 activity 走到 resumed 状态后，在执行 `ActivityTaskManagerService.setResumedActivityUncheckLocked` 时就会调用 `DisplayContent.setFocusedApp` 变更 focused application，再由 InputMonitor 经 JNI 调到 InputDispatch 完成 input 模块 focused application 的更新
+focused application 的变更相比 focused window 的变更简单些，focused application 就是在前台 resumed 的 activity。因此当一个 activity 走到 resumed 状态后，在执行 `ActivityTaskManagerService.setResumedActivityUncheckLocked` 时就会调用 `DisplayContent.setFocusedApp` 变更 focused application，再由 InputMonitor 经 JNI 调到 InputDispatch 完成 input 模块 focused application 的更新
 
 
 
