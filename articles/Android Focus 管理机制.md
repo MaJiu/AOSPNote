@@ -10,7 +10,7 @@
 
 
 
-本文主要讨论 Android Window Focus 管理机制，暂不涉及 window 内的控件(view)的焦点管理，涉及的代码为 以 Android S 代码。第二节先讨论了那几个模块都维护了 focus 信息，如何查询，各自有什么区别。第三四节，主要讨论 wm 模块和input 模块 focused window 和 focused application 变更流程，最后一节做简要总结
+本文主要讨论 Android Window Focus 管理机制，暂不涉及 window 内的控件(view)的焦点管理，涉及的代码为 Android S 代码。第二节先讨论了哪几个模块都维护了 focus 信息，如何查询，各自有什么区别。第三四节，主要讨论 wm 模块和input 模块 focused window 和 focused application 变更流程，最后一节做简要总结
 
 ## Focus 相关模块
 
