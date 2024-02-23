@@ -27,8 +27,27 @@ class BufferQueueCore : public virtual RefBase {
 
     // mActiveBuffers contains all slots which have a non-FREE buffer attached.
     std::set<int> mActiveBuffers;
+    
+    // 构造函数
+    // BufferQueueCore 的初始状态
+    BufferQueueCore::BufferQueueCore() {
+        int numStartingBuffers = getMaxBufferCountLocked();
+        for (int s = 0; s < numStartingBuffers; s++) {
+            mFreeSlots.insert(s);
+        }
+        for (int s = numStartingBuffers; s < BufferQueueDefs::NUM_BUFFER_SLOTS;
+                s++) {
+            mUnusedSlots.push_front(s);
+        }
+    }
 }
 ```
+
+mSlots used  unused
+
+used active unactive
+
+unactive  mFreeSlots mFreeBuffers
 
 ## SurfaceComposerClient
 
