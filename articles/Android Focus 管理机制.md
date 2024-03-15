@@ -269,6 +269,75 @@ FocusResolver::Focusability FocusResolver::isTokenFocusable(
 
 ```
 
+这里 window->getInfo()->focusable 由 WMS 填充
+
+```Java
+final class InputMonitor {
+    void populateInputWindowHandle(final InputWindowHandleWrapper inputWindowHandle,
+            final WindowState w) {
+        // ...
+        final boolean focusable = w.canReceiveKeys()
+                && (mService.mPerDisplayFocusEnabled || mDisplayContent.isOnTop());
+        // ...
+    }
+}
+
+class WindowState extends WindowContainer<WindowState> implements WindowManagerPolicy.WindowState, InsetsControlTarget {
+  	public boolean canReceiveKeys(boolean fromUserTouch) {
+        final boolean canReceiveKeys = isVisibleOrAdding()
+                && (mViewVisibility == View.VISIBLE) && !mRemoveOnExit
+                && ((mAttrs.flags & WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE) == 0)
+                && (mActivityRecord == null || mActivityRecord.windowsAreFocusable(fromUserTouch))
+                && canReceiveTouchInput();
+        if (!canReceiveKeys) {
+            return false;
+        }
+        // Do not allow untrusted virtual display to receive keys unless user intentionally
+        // touches the display.
+        return fromUserTouch || getDisplayContent().isOnTop()
+                || getDisplayContent().isTrusted();
+    }
+            
+}
+```
+
+window->getInfo()->visible 由 SurfaceFlinger 填充，但其实还是受 WMS 影响，取决于 WMS 是否执行 Transaction.show(surfaceControl)
+
+```C++
+// Layer.cpp
+InputWindowInfo Layer::fillInputInfo(const sp<DisplayDevice>& display) {
+    //...
+    InputWindowInfo info = mDrawingState.inputInfo;
+    //...
+    // 这里 hasInputInfo 大部分为 true 所以用的是 canReceiveInput
+    info.visible = hasInputInfo() ? canReceiveInput() : isVisible();
+}
+bool Layer::canReceiveInput() const {
+    return !isHiddenByPolicy();
+}
+
+// 判断是否有 eLayerHidden flag
+// 因为 eLayerHidden = 0x01, 所以这里只需要看一个 Layer 的 flag 奇偶就知道是否可见 奇数不可见
+bool Layer::isHiddenByPolicy() const {
+    const State& s(mDrawingState);
+    const auto& parent = mDrawingParent.promote();
+    if (parent != nullptr && parent->isHiddenByPolicy()) {
+        return true;
+    }
+    if (usingRelativeZ(LayerVector::StateSet::Drawing)) {
+        auto zOrderRelativeOf = mDrawingState.zOrderRelativeOf.promote();
+        if (zOrderRelativeOf != nullptr) {
+            if (zOrderRelativeOf->isHiddenByPolicy()) {
+                return true;
+            }
+        }
+    }
+    return s.flags & layer_state_t::eLayerHidden;
+}
+```
+
+
+
 ## Focused Application 变更流程
 
 focused application 的变更相比 focused window 的变更简单些，focused application 就是在前台 resumed 的 activity。因此当一个 activity 走到 resumed 状态后，在执行 `ActivityTaskManagerService.setResumedActivityUncheckLocked` 时就会调用 `DisplayContent.setFocusedApp` 变更 focused application，再由 InputMonitor 经 JNI 调到 InputDispatch 完成 input 模块 focused application 的更新
