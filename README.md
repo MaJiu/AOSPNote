@@ -12,6 +12,7 @@ articles 目前已完成的文章
 
 - [ ] Android GUI 系统概述
 - [ ] Android 文本渲染
+- [x] Android Focus 管理机制
 
 
 
